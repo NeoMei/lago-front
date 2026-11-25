@@ -16,6 +16,7 @@ jest.mock('@sentry/react', () => ({
 describe('utils', () => {
   it('loads the Simplified Chinese UI catalog without changing the English catalog', async () => {
     const key = 'text_620bc4d4269a55014d493f12'
+
     const [chinese, english] = await Promise.all([
       getUiTranslations('zh-CN'),
       getUiTranslations('en'),
@@ -23,6 +24,15 @@ describe('utils', () => {
 
     expect(chinese[key]).toBe('创建账户')
     expect(english[key]).toBe('Create your account')
+  })
+
+  it('preserves credit quantities and month units across Chinese plural forms', async () => {
+    const catalog = await getUiTranslations('zh-CN')
+
+    expect(catalog.text_62da6ec24a8e24e44f812896).toBe(
+      '{{amount}} 额度|{{amount}} 额度|{{amount}} 额度',
+    )
+    expect(getPluralTranslation(catalog.text_1791838459983q6n44o5fdd4, 3)).toBe('{{count}} 个月')
   })
 
   describe('translateKey', () => {

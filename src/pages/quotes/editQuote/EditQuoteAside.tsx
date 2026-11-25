@@ -244,16 +244,16 @@ const EditQuoteAsideForm = ({
   }
 
   const handleDownloadPdf = () => {
-    const props = buildQuotePreviewProps({
+    const previewProps = buildQuotePreviewProps({
       version: quote.currentVersion,
       customer: quote.customer,
       images: (quote.images ?? {}) as Record<string, string>,
     })
 
-    void loadContextualTranslator(props.customerLocale)
+    void loadContextualTranslator(previewProps.customerLocale)
       .then((translateDocument) =>
         download({
-          ...props,
+          ...previewProps,
           header: {
             documentNumber: quote.number,
             rows: [
