@@ -6350,6 +6350,8 @@ export enum MoveToLiveBlockingReasonEnum {
   MoveToLiveItemRefused = 'move_to_live_item_refused',
   /** The item's parent must be moved to live mode first */
   MoveToLiveParentMissing = 'move_to_live_parent_missing',
+  /** A live privilege the item uses has another value type */
+  MoveToLivePrivilegeMismatch = 'move_to_live_privilege_mismatch',
   /** Every item the item applies to, or the metric it bills, is deleted */
   MoveToLiveTargetDeleted = 'move_to_live_target_deleted',
   /** The item applies to items that cannot be moved to live mode */

@@ -5567,5 +5567,6 @@
   "text_1795619686245tlzbtzvn6vz": "plan rate card",
   "text_1795619686245q43n7s1yga8": "The live plan of the {{itemType}} {{code}} has contracts, so its pricing can't change.",
   "text_17956196862456c39s3e4ks1": "The live plan of the {{itemType}} {{code}} already prices the same product or product filter with another rate card.",
-  "text_1795619686245iakqtpjfy7d": "A live feature of the {{itemType}} {{code}} lacks a privilege it uses. Add the privilege in production first."
+  "text_1795619686245iakqtpjfy7d": "A live feature of the {{itemType}} {{code}} lacks a privilege it uses. Add the privilege in production first.",
+  "text_1795632678714bebtdd5na4n": "A live feature of the {{itemType}} {{code}} has a privilege of another value type. Align the privilege in production first."
 }

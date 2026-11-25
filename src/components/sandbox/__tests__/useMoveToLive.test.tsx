@@ -77,6 +77,7 @@ const CUSTOM_AGGREGATION_KEY = 'text_1795632118353nbberbjhk7i'
 const PLAN_LOCKED_KEY = 'text_1795619686245q43n7s1yga8'
 const ALREADY_PRICED_KEY = 'text_17956196862456c39s3e4ks1'
 const PRIVILEGE_NOT_FOUND_KEY = 'text_1795619686245iakqtpjfy7d'
+const PRIVILEGE_MISMATCH_KEY = 'text_1795632678714bebtdd5na4n'
 const UNKNOWN_ITEM_TYPE_KEY = 'text_17954414475352pip2ykpd9z'
 const UNKNOWN_BLOCKING_REASON_KEY = 'text_1795441447536k9lkdhz1ect'
 const SUCCESS_KEY = 'text_1795431906433hn8hins2pus'
@@ -462,6 +463,14 @@ describe('useMoveToLive', () => {
             refusalField: 'privilege',
           },
           `${PRIVILEGE_NOT_FOUND_KEY}|${CATALOG_PLAN_LABEL_KEY}|${CATALOG_PLAN.code}`,
+        ],
+        [
+          'a live privilege of the plan has another value type',
+          {
+            blockingReason: MoveToLiveBlockingReasonEnum.MoveToLivePrivilegeMismatch,
+            refusedItem: CATALOG_PLAN,
+          },
+          `${PRIVILEGE_MISMATCH_KEY}|${CATALOG_PLAN_LABEL_KEY}|${CATALOG_PLAN.code}`,
         ],
         [
           'a live privilege refuses an entitlement value of the plan',

@@ -81,6 +81,7 @@ const UNKNOWN_BLOCKING_REASON_TRANSLATION_KEY = 'text_1795441447536k9lkdhz1ect'
 const BLOCKING_REASON_TRANSLATION_KEYS: Record<MoveToLiveBlockingReasonEnum, string> = {
   [MoveToLiveBlockingReasonEnum.ValueAlreadyExist]: 'text_1795431906433xcd1rme3cdx',
   [MoveToLiveBlockingReasonEnum.MoveToLiveParentMissing]: 'text_1795431906433wbhymkx79qb',
+  [MoveToLiveBlockingReasonEnum.MoveToLivePrivilegeMismatch]: 'text_1795632678714bebtdd5na4n',
   [MoveToLiveBlockingReasonEnum.MoveToLiveAdminOnly]: 'text_1795431906433pfg3dttjin2',
   [MoveToLiveBlockingReasonEnum.OrganizationInactive]: 'text_1795431906433mautyr4e7ta',
   [MoveToLiveBlockingReasonEnum.MoveToLiveItemInactive]: 'text_1795431906433ulcrysmgdpl',
