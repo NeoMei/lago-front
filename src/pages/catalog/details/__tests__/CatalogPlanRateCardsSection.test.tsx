@@ -7,10 +7,12 @@ import {
   CENTRALIZED_DIALOG_CONFIRM_BUTTON_TEST_ID,
   CENTRALIZED_DIALOG_NAME,
 } from '~/components/dialogs/const'
+import { MOVE_TO_LIVE_ACTION_TEST_ID } from '~/components/sandbox/useMoveToLive'
 import {
   CurrencyEnum,
   DestroyPlanAppliedRateCardDocument,
   GetPlanAppliedRateCardsForRateCardsSectionDocument,
+  MoveToLiveMovableItemTypeEnum,
 } from '~/generated/graphql'
 import { AllTheProviders, testMockNavigateFn, TestMocksType } from '~/test-utils'
 
@@ -23,6 +25,13 @@ NiceModal.register(CENTRALIZED_DIALOG_NAME, CentralizedDialog)
 
 const mockHasPermissions = jest.fn().mockReturnValue(true)
 const mockOpenAppliedRateCardDrawer = jest.fn()
+const mockMoveToLive = jest.fn()
+let mockCanMoveToLive = false
+
+jest.mock('~/components/sandbox/useMoveToLive', () => ({
+  ...jest.requireActual('~/components/sandbox/useMoveToLive'),
+  useMoveToLive: () => ({ canMoveToLive: mockCanMoveToLive, moveToLive: mockMoveToLive }),
+}))
 
 jest.mock('~/hooks/usePermissions', () => ({
   usePermissions: () => ({ hasPermissions: mockHasPermissions }),
@@ -256,4 +265,37 @@ describe('CatalogPlanRateCardsSection', () => {
       expect(screen.queryByTestId(CATALOG_PLAN_ADD_RATE_CARD_TEST_ID)).not.toBeInTheDocument()
     },
   )
+
+  describe('GIVEN move to live mode', () => {
+    afterEach(() => {
+      mockCanMoveToLive = false
+    })
+
+    it('WHEN the member can move items THEN the row action moves the plan rate card to live mode', async () => {
+      mockCanMoveToLive = true
+      const user = userEvent.setup()
+
+      renderSection([buildListMock([rowFixture])])
+      await waitFor(() => expect(screen.getByText('Product One')).toBeInTheDocument())
+
+      await user.click(screen.getByTestId('open-action-button'))
+      await user.click(screen.getByTestId(MOVE_TO_LIVE_ACTION_TEST_ID))
+
+      expect(mockMoveToLive).toHaveBeenCalledWith({
+        itemType: MoveToLiveMovableItemTypeEnum.PlanRateCard,
+        id: 'applied-1',
+      })
+    })
+
+    it('WHEN the member cannot move items THEN the row action is not offered', async () => {
+      const user = userEvent.setup()
+
+      renderSection([buildListMock([rowFixture])])
+      await waitFor(() => expect(screen.getByText('Product One')).toBeInTheDocument())
+
+      await user.click(screen.getByTestId('open-action-button'))
+
+      expect(screen.queryByTestId(MOVE_TO_LIVE_ACTION_TEST_ID)).not.toBeInTheDocument()
+    })
+  })
 })

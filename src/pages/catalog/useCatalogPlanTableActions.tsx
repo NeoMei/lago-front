@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { generatePath } from 'react-router'
 
 import { ActionColumn, ActionItem } from '~/components/designSystem/Table/types'
+import { MOVE_TO_LIVE_ACTION_TEST_ID, useMoveToLive } from '~/components/sandbox/useMoveToLive'
 import { addToast } from '~/core/apolloClient'
 import { CatalogPlanDetailsTabsOptionsEnum } from '~/core/constants/tabsOptions'
 import { CATALOG_PLAN_DETAILS_ROUTE } from '~/core/router'
@@ -9,6 +10,7 @@ import { copyToClipboard } from '~/core/utils/copyToClipboard'
 import {
   CatalogPlanForCatalogPlanDrawerFragment,
   CatalogPlanForDeleteCatalogPlanDialogFragment,
+  MoveToLiveMovableItemTypeEnum,
 } from '~/generated/graphql'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { usePermissions } from '~/hooks/usePermissions'
@@ -39,6 +41,7 @@ export const useCatalogPlanTableActions = (): {
   const { hasPermissions } = usePermissions()
   const { openDrawer: openCatalogPlanDrawer } = useCatalogPlanDrawer()
   const { openDeleteCatalogPlanDialog } = useDeleteCatalogPlanDialog()
+  const { canMoveToLive, moveToLive } = useMoveToLive()
 
   const canUpdateCatalogPlans = hasPermissions(['plansUpdate'])
   const canDeleteCatalogPlans = hasPermissions(['plansDelete'])
@@ -103,14 +106,26 @@ export const useCatalogPlanTableActions = (): {
         })
       }
 
+      if (canMoveToLive) {
+        items.push({
+          startIcon: 'outside',
+          title: translate('text_1795431906432py065218gdv'),
+          dataTest: MOVE_TO_LIVE_ACTION_TEST_ID,
+          onAction: ({ id }) =>
+            moveToLive({ itemType: MoveToLiveMovableItemTypeEnum.CatalogPlan, id }),
+        })
+      }
+
       return items
     },
     [
       canUpdateCatalogPlans,
       canDeleteCatalogPlans,
+      canMoveToLive,
       translate,
       openCatalogPlanDrawer,
       openDeleteCatalogPlanDialog,
+      moveToLive,
     ],
   )
 

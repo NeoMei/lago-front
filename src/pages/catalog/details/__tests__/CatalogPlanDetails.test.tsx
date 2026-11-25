@@ -8,8 +8,13 @@ import {
   ENTITY_SECTION_METADATA_TEST_ID,
   ENTITY_SECTION_VIEW_NAME_TEST_ID,
 } from '~/components/MainHeader/mainHeaderTestIds'
+import { MOVE_TO_LIVE_ACTION_TEST_ID } from '~/components/sandbox/useMoveToLive'
 import { CatalogPlanDetailsTabsOptionsEnum } from '~/core/constants/tabsOptions'
-import { CurrencyEnum, GetCatalogPlanForDetailsDocument } from '~/generated/graphql'
+import {
+  CurrencyEnum,
+  GetCatalogPlanForDetailsDocument,
+  MoveToLiveMovableItemTypeEnum,
+} from '~/generated/graphql'
 import { TMembershipPermissions } from '~/hooks/usePermissions'
 import { AllTheProviders, testMockNavigateFn } from '~/test-utils'
 
@@ -27,6 +32,13 @@ const mockOpenCatalogPlanDrawer = jest.fn()
 const mockOpenDeleteCatalogPlanDialog = jest.fn()
 const mockHasPermissions = jest.fn()
 let mockIsPremium = true
+const mockMoveToLive = jest.fn()
+let mockCanMoveToLive = false
+
+jest.mock('~/components/sandbox/useMoveToLive', () => ({
+  ...jest.requireActual('~/components/sandbox/useMoveToLive'),
+  useMoveToLive: () => ({ canMoveToLive: mockCanMoveToLive, moveToLive: mockMoveToLive }),
+}))
 
 jest.mock('~/pages/catalog/drawers/catalogPlan/useCatalogPlanDrawer', () => ({
   useCatalogPlanDrawer: () => ({ openDrawer: mockOpenCatalogPlanDrawer }),
@@ -322,5 +334,33 @@ describe('CatalogPlanDetails', () => {
 
     expect(screen.queryByRole('button', { name: EDIT_PLAN_KEY })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: DELETE_PLAN_KEY })).not.toBeInTheDocument()
+  })
+
+  describe('GIVEN move to live mode', () => {
+    afterEach(() => {
+      mockCanMoveToLive = false
+    })
+
+    it('WHEN the member can move items THEN the action moves the plan to live mode', async () => {
+      mockCanMoveToLive = true
+
+      await act(() => renderPage())
+
+      await userEvent.click((await screen.findAllByTestId('catalog-plan-details-actions'))[0])
+      await userEvent.click(screen.getByTestId(MOVE_TO_LIVE_ACTION_TEST_ID))
+
+      expect(mockMoveToLive).toHaveBeenCalledWith({
+        itemType: MoveToLiveMovableItemTypeEnum.CatalogPlan,
+        id: 'plan-1',
+      })
+    })
+
+    it('WHEN the member cannot move items THEN the action is not offered', async () => {
+      await act(() => renderPage())
+
+      await userEvent.click((await screen.findAllByTestId('catalog-plan-details-actions'))[0])
+
+      expect(screen.queryByTestId(MOVE_TO_LIVE_ACTION_TEST_ID)).not.toBeInTheDocument()
+    })
   })
 })

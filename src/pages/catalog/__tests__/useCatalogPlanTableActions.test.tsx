@@ -1,8 +1,9 @@
 import { act, render } from '@testing-library/react'
 
+import { MOVE_TO_LIVE_ACTION_TEST_ID } from '~/components/sandbox/useMoveToLive'
 import { addToast } from '~/core/apolloClient'
 import { copyToClipboard } from '~/core/utils/copyToClipboard'
-import { CurrencyEnum } from '~/generated/graphql'
+import { CurrencyEnum, MoveToLiveMovableItemTypeEnum } from '~/generated/graphql'
 import { AllTheProviders } from '~/test-utils'
 
 import {
@@ -16,10 +17,18 @@ const PLAN_CODE_COPIED_KEY = 'text_1789030049528x3nlpl7hu7x'
 const EDIT_PLAN_KEY = 'text_1789030049528hmelti5lsxj'
 const DELETE_PLAN_KEY = 'text_1789030049528pjeaakmg1nc'
 const DELETE_LOCKED_TOOLTIP_KEY = 'text_1789030049528ow0evnxq68g'
+const MOVE_TO_LIVE_KEY = 'text_1795431906432py065218gdv'
 
 const mockOpenDrawer = jest.fn()
 const mockOpenDeleteDialog = jest.fn()
 const mockHasPermissions = jest.fn()
+const mockMoveToLive = jest.fn()
+let mockCanMoveToLive = false
+
+jest.mock('~/components/sandbox/useMoveToLive', () => ({
+  ...jest.requireActual('~/components/sandbox/useMoveToLive'),
+  useMoveToLive: () => ({ canMoveToLive: mockCanMoveToLive, moveToLive: mockMoveToLive }),
+}))
 
 jest.mock('../drawers/catalogPlan/useCatalogPlanDrawer', () => ({
   useCatalogPlanDrawer: () => ({ openDrawer: mockOpenDrawer }),
@@ -73,6 +82,7 @@ describe('useCatalogPlanTableActions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockHasPermissions.mockReturnValue(true)
+    mockCanMoveToLive = false
   })
 
   it('GIVEN every permission THEN offers copy, edit and delete', () => {
@@ -126,6 +136,34 @@ describe('useCatalogPlanTableActions', () => {
     render(<Host />, { wrapper: AllTheProviders })
 
     expect(itemsFor(catalogPlan)[2].disabled).toBe(false)
+  })
+
+  describe('GIVEN move to live mode', () => {
+    it('WHEN the member can move items THEN the last action moves the plan to live mode', () => {
+      mockCanMoveToLive = true
+      render(<Host />, { wrapper: AllTheProviders })
+
+      const moveItem = itemsFor(catalogPlan).at(-1)
+
+      expect(moveItem).toEqual(
+        expect.objectContaining({ title: MOVE_TO_LIVE_KEY, dataTest: MOVE_TO_LIVE_ACTION_TEST_ID }),
+      )
+
+      act(() => {
+        void moveItem?.onAction(catalogPlan)
+      })
+
+      expect(mockMoveToLive).toHaveBeenCalledWith({
+        itemType: MoveToLiveMovableItemTypeEnum.CatalogPlan,
+        id: 'plan-1',
+      })
+    })
+
+    it('WHEN the member cannot move items THEN the action is not offered', () => {
+      render(<Host />, { wrapper: AllTheProviders })
+
+      expect(titles(catalogPlan)).not.toContain(MOVE_TO_LIVE_KEY)
+    })
   })
 
   it('GIVEN a row THEN links to its overview tab', () => {

@@ -14,12 +14,14 @@ import {
   formatFiltersForAppliedRateCardsQuery,
 } from '~/components/Filters'
 import { PageSectionTitle } from '~/components/layouts/Section'
+import { useMoveToLive } from '~/components/sandbox/useMoveToLive'
 import { SearchInput } from '~/components/SearchInput'
 import { APPLIED_RATE_CARD_LIST_FILTER_PREFIX } from '~/core/constants/filters'
 import { DEFAULT_PAGE_SIZE } from '~/core/constants/pagination'
 import { CATALOG_PLAN_RATE_CARD_DETAILS_ROUTE } from '~/core/router'
 import {
   CurrencyEnum,
+  MoveToLiveMovableItemTypeEnum,
   PlanAppliedRateCardForAppliedRateCardsTableFragmentDoc,
   useGetPlanAppliedRateCardsForRateCardsSectionLazyQuery,
 } from '~/generated/graphql'
@@ -88,6 +90,7 @@ export const CatalogPlanRateCardsSection = ({
   const { page, goToPage } = usePageSearchParam()
   const [searchParams] = useSearchParams()
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const { canMoveToLive, moveToLive } = useMoveToLive()
 
   const filtersForQuery = useMemo(
     () => formatFiltersForAppliedRateCardsQuery(searchParams),
@@ -185,6 +188,12 @@ export const CatalogPlanRateCardsSection = ({
         }
         onCopyRateCardCode={copyRateCardCode}
         onRemoveRateCard={removeRateCard}
+        onMoveToLive={
+          canMoveToLive
+            ? (row) =>
+                moveToLive({ itemType: MoveToLiveMovableItemTypeEnum.PlanRateCard, id: row.id })
+            : undefined
+        }
       />
     </section>
   )
