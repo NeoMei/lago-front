@@ -18,3 +18,8 @@ export enum LocaleEnum {
   'zh-TW' = 'zh-TW', // Chinese (Traditional)
 }
 export type Locale = keyof typeof LocaleEnum
+
+export type UiLocale = Locale | 'zh-CN'
+
+export const isUiLocale = (value: unknown): value is UiLocale =>
+  value === 'zh-CN' || Object.values(LocaleEnum).some((locale) => locale === value)

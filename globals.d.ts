@@ -20,6 +20,7 @@ declare var NANGO_PUBLIC_KEY: string
 declare var SENTRY_DSN: string
 declare var LAGO_DISABLE_PDF_GENERATION: string
 declare var LAGO_SUPERSET_URL: string
+declare var LAGO_DEFAULT_UI_LOCALE: string | undefined
 
 declare module '*.svg' {
   import { FC, SVGProps } from 'react'

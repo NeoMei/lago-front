@@ -3,7 +3,7 @@ import { captureMessage } from '@sentry/react'
 import { AppEnvEnum } from '~/core/constants/globalTypes'
 import { isDevOrQaAppEnv, isProductionAppEnv } from '~/core/utils/appEnv'
 
-import { Locale, LocaleEnum, TranslateData, Translation, Translations } from './types'
+import { Locale, LocaleEnum, TranslateData, Translation, Translations, UiLocale } from './types'
 
 export const getTranslations: (locale: Locale) => Promise<Record<string, string>> = async (
   locale,
@@ -18,6 +18,17 @@ export const getTranslations: (locale: Locale) => Promise<Record<string, string>
   }
 
   return loadedTranslation
+}
+
+export const getUiTranslations = async (locale: UiLocale): Promise<Translation> => {
+  if (locale !== 'zh-CN') return getTranslations(locale)
+
+  const [{ default: english }, { default: chinese }] = await Promise.all([
+    import('../../../translations/base.json'),
+    import('../../../translations/ui/zh-CN.json'),
+  ])
+
+  return { ...english, ...chinese }
 }
 
 export function replaceDynamicVarInString(template: string, data: TranslateData) {
@@ -41,7 +52,7 @@ export function getPluralTranslation(template: string, plural: number) {
 export const translateKey: (
   context: {
     translations: Translations
-    locale: Locale
+    locale: UiLocale
     appEnv: AppEnvEnum | undefined
   },
   key: string,
