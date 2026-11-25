@@ -4,6 +4,7 @@ import { AppEnvEnum } from '~/core/constants/globalTypes'
 import { LocaleEnum } from '~/core/translations/types'
 import {
   getPluralTranslation,
+  getUiTranslations,
   replaceDynamicVarInString,
   translateKey,
 } from '~/core/translations/utils'
@@ -13,6 +14,17 @@ jest.mock('@sentry/react', () => ({
 }))
 
 describe('utils', () => {
+  it('loads the Simplified Chinese UI catalog without changing the English catalog', async () => {
+    const key = 'text_620bc4d4269a55014d493f12'
+    const [chinese, english] = await Promise.all([
+      getUiTranslations('zh-CN'),
+      getUiTranslations('en'),
+    ])
+
+    expect(chinese[key]).toBe('创建账户')
+    expect(english[key]).toBe('Create your account')
+  })
+
   describe('translateKey', () => {
     const baseContext = {
       locale: LocaleEnum.en,
