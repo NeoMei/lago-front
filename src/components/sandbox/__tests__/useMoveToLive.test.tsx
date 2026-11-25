@@ -74,6 +74,9 @@ const FEATURE_UNAVAILABLE_KEY = 'text_1795619366911o3vnwd5udy6'
 const FILTER_NOT_FOUND_KEY = 'text_1795619366911a8sk62vg94f'
 const FILTER_VALUE_MISSING_KEY = 'text_1795630961583o318oscsu8g'
 const CUSTOM_AGGREGATION_KEY = 'text_1795632118353nbberbjhk7i'
+const PLAN_LOCKED_KEY = 'text_1795619686245q43n7s1yga8'
+const ALREADY_PRICED_KEY = 'text_17956196862456c39s3e4ks1'
+const PRIVILEGE_NOT_FOUND_KEY = 'text_1795619686245iakqtpjfy7d'
 const UNKNOWN_ITEM_TYPE_KEY = 'text_17954414475352pip2ykpd9z'
 const UNKNOWN_BLOCKING_REASON_KEY = 'text_1795441447536k9lkdhz1ect'
 const SUCCESS_KEY = 'text_1795431906433hn8hins2pus'
@@ -83,6 +86,8 @@ const PRODUCT_LABEL_KEY = 'text_1795431906434ld1peo7t04a'
 const PRODUCT_CATEGORY_LABEL_KEY = 'text_1795431906434cs56t3kl5lh'
 const PRICING_UNIT_LABEL_KEY = 'text_1795431906433676fmxuhwig'
 const RATE_CARD_LABEL_KEY = 'text_17954319064341xdvy2c5ckl'
+const CATALOG_PLAN_LABEL_KEY = 'text_179561968624506z4suovzxj'
+const PLAN_RATE_CARD_LABEL_KEY = 'text_1795619686245tlzbtzvn6vz'
 
 const TARGET = { itemType: MoveToLiveMovableItemTypeEnum.Product, id: 'product-1' }
 
@@ -113,6 +118,18 @@ const PRICING_UNIT = buildItem({
   itemType: MoveToLiveItemTypeEnum.PricingUnit,
   code: 'credits',
   name: 'Credits',
+})
+const CATALOG_PLAN = buildItem({
+  id: 'plan-1',
+  itemType: MoveToLiveItemTypeEnum.CatalogPlan,
+  code: 'starter',
+  name: 'Starter',
+})
+const PLAN_RATE_CARD = buildItem({
+  id: 'plan-rate-card-1',
+  itemType: MoveToLiveItemTypeEnum.PlanRateCard,
+  code: 'storage_rate',
+  name: null,
 })
 const CATEGORY = buildItem({
   id: 'category-1',
@@ -213,6 +230,23 @@ describe('useMoveToLive', () => {
         expect(copied).toHaveTextContent(`storage_rate${RATE_CARD_LABEL_KEY} · storage_rate`)
         expect(copied).not.toHaveTextContent('Storage')
         expect(reused).toHaveTextContent(`Gigabytes${BILLABLE_METRIC_LABEL_KEY} · gb`)
+      })
+
+      it('THEN the dialog labels catalog plans and plan rate cards', async () => {
+        mockGetPreview.mockResolvedValue(
+          buildPreview({ copiedItems: [PRODUCT, PLAN_RATE_CARD], reusedItems: [CATALOG_PLAN] }),
+        )
+
+        await moveToLive()
+
+        render(openedDialog().headerContent as ReactElement)
+
+        expect(screen.getByTestId(MOVE_TO_LIVE_COPIED_ITEMS_TEST_ID)).toHaveTextContent(
+          `storage_rate${PLAN_RATE_CARD_LABEL_KEY} · storage_rate`,
+        )
+        expect(screen.getByTestId(MOVE_TO_LIVE_REUSED_ITEMS_TEST_ID)).toHaveTextContent(
+          `Starter${CATALOG_PLAN_LABEL_KEY} · starter`,
+        )
       })
 
       it('THEN a section without items is not rendered', async () => {
@@ -390,6 +424,56 @@ describe('useMoveToLive', () => {
           `${UNSUPPORTED_KEY}|${BILLABLE_METRIC_LABEL_KEY}|gb`,
         ],
         [
+          'the live plan has contracts',
+          {
+            blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveItemRefused,
+            refusedItem: PLAN_RATE_CARD,
+            refusalCode: 'plan_locked',
+            refusalField: 'plan',
+          },
+          `${PLAN_LOCKED_KEY}|${PLAN_RATE_CARD_LABEL_KEY}|${PLAN_RATE_CARD.code}`,
+        ],
+        [
+          'the live plan already prices the same product',
+          {
+            blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveItemRefused,
+            refusedItem: PLAN_RATE_CARD,
+            refusalCode: 'product_already_priced',
+            refusalField: 'rateCard',
+          },
+          `${ALREADY_PRICED_KEY}|${PLAN_RATE_CARD_LABEL_KEY}|${PLAN_RATE_CARD.code}`,
+        ],
+        [
+          'the live plan already prices the same product filter',
+          {
+            blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveItemRefused,
+            refusedItem: PLAN_RATE_CARD,
+            refusalCode: 'product_filter_already_priced',
+            refusalField: 'rateCard',
+          },
+          `${ALREADY_PRICED_KEY}|${PLAN_RATE_CARD_LABEL_KEY}|${PLAN_RATE_CARD.code}`,
+        ],
+        [
+          'a live feature lacks a privilege of the plan',
+          {
+            blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveItemRefused,
+            refusedItem: CATALOG_PLAN,
+            refusalCode: 'not_found',
+            refusalField: 'privilege',
+          },
+          `${PRIVILEGE_NOT_FOUND_KEY}|${CATALOG_PLAN_LABEL_KEY}|${CATALOG_PLAN.code}`,
+        ],
+        [
+          'a live privilege refuses an entitlement value of the plan',
+          {
+            blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveItemRefused,
+            refusedItem: CATALOG_PLAN,
+            refusalCode: 'value_is_invalid',
+            refusalField: 'entitlements',
+          },
+          `${UNSUPPORTED_KEY}|${CATALOG_PLAN_LABEL_KEY}|${CATALOG_PLAN.code}`,
+        ],
+        [
           'the item applies to items that cannot be moved',
           { blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveUnsupportedTarget },
           `${UNSUPPORTED_KEY}|${PRODUCT_LABEL_KEY}|storage`,
@@ -429,16 +513,16 @@ describe('useMoveToLive', () => {
     })
 
     describe('GIVEN the API answers values this build does not know', () => {
-      const CATALOG_PLAN = buildItem({
-        id: 'plan-1',
-        itemType: 'catalog_plan' as MoveToLiveItemTypeEnum,
-        code: 'starter',
-        name: 'Starter',
+      const WALLET = buildItem({
+        id: 'wallet-1',
+        itemType: 'wallet' as MoveToLiveItemTypeEnum,
+        code: 'prepaid',
+        name: 'Prepaid',
       })
 
       it('WHEN the blocking reason is unknown THEN the toast uses the generic message', async () => {
         mockGetPreview.mockResolvedValue(
-          buildPreview({ blockingReason: 'plan_locked' as MoveToLiveBlockingReasonEnum }),
+          buildPreview({ blockingReason: 'wallet_locked' as MoveToLiveBlockingReasonEnum }),
         )
 
         await moveToLive()
@@ -453,7 +537,7 @@ describe('useMoveToLive', () => {
         mockGetPreview.mockResolvedValue(
           buildPreview({
             blockingReason: MoveToLiveBlockingReasonEnum.MoveToLiveParentMissing,
-            missingParent: CATALOG_PLAN,
+            missingParent: WALLET,
           }),
         )
 
@@ -461,19 +545,19 @@ describe('useMoveToLive', () => {
 
         expect(addToast).toHaveBeenCalledWith({
           severity: 'info',
-          message: `${PARENT_MISSING_KEY}|${UNKNOWN_ITEM_TYPE_KEY}|starter`,
+          message: `${PARENT_MISSING_KEY}|${UNKNOWN_ITEM_TYPE_KEY}|prepaid`,
         })
       })
 
       it('WHEN a listed item type is unknown THEN the dialog uses the generic item label', async () => {
-        mockGetPreview.mockResolvedValue(buildPreview({ reusedItems: [CATALOG_PLAN] }))
+        mockGetPreview.mockResolvedValue(buildPreview({ reusedItems: [WALLET] }))
 
         await moveToLive()
 
         render(openedDialog().headerContent as ReactElement)
 
         expect(screen.getByTestId(MOVE_TO_LIVE_REUSED_ITEMS_TEST_ID)).toHaveTextContent(
-          `Starter${UNKNOWN_ITEM_TYPE_KEY} · starter`,
+          `Prepaid${UNKNOWN_ITEM_TYPE_KEY} · prepaid`,
         )
       })
     })

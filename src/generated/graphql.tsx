@@ -6372,8 +6372,10 @@ export type MoveToLiveItem = {
 /** Item types of Move to live mode, including those only moved along with another item */
 export enum MoveToLiveItemTypeEnum {
   BillableMetric = 'billable_metric',
+  CatalogPlan = 'catalog_plan',
   Coupon = 'coupon',
   Feature = 'feature',
+  PlanRateCard = 'plan_rate_card',
   PricingUnit = 'pricing_unit',
   Product = 'product',
   ProductCategory = 'product_category',
@@ -6393,8 +6395,10 @@ export type MoveToLiveModeInput = {
 /** Item types a user can move from a sandbox to its production organization */
 export enum MoveToLiveMovableItemTypeEnum {
   BillableMetric = 'billable_metric',
+  CatalogPlan = 'catalog_plan',
   Coupon = 'coupon',
   Feature = 'feature',
+  PlanRateCard = 'plan_rate_card',
   Product = 'product',
   ProductCategory = 'product_category'
 }

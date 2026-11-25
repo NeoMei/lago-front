@@ -62,8 +62,10 @@ const NOT_FOUND_TRANSLATION_KEY = 'text_1795539325659cdyvy8085m1'
 
 const ITEM_TYPE_TRANSLATION_KEYS: Record<MoveToLiveItemTypeEnum, string> = {
   [MoveToLiveItemTypeEnum.BillableMetric]: 'text_1795431906433n4atjiccd3h',
+  [MoveToLiveItemTypeEnum.CatalogPlan]: 'text_179561968624506z4suovzxj',
   [MoveToLiveItemTypeEnum.Coupon]: 'text_17954319064331bw3yqfc0t2',
   [MoveToLiveItemTypeEnum.Feature]: 'text_1795431906433rlgowe4019k',
+  [MoveToLiveItemTypeEnum.PlanRateCard]: 'text_1795619686245tlzbtzvn6vz',
   [MoveToLiveItemTypeEnum.PricingUnit]: 'text_1795431906433676fmxuhwig',
   [MoveToLiveItemTypeEnum.Product]: 'text_1795431906434ld1peo7t04a',
   [MoveToLiveItemTypeEnum.ProductCategory]: 'text_1795431906434cs56t3kl5lh',
@@ -104,6 +106,10 @@ const REFUSAL_TRANSLATION_KEYS: Record<string, string> = {
   'not_allowed_with_proration:rateModel': 'text_1795597376102tkbcu8a4f52',
   'not_found:productFilter': 'text_1795619366911a8sk62vg94f',
   'value_is_invalid:values.value': 'text_1795630961583o318oscsu8g',
+  'not_found:privilege': 'text_1795619686245iakqtpjfy7d',
+  plan_locked: 'text_1795619686245q43n7s1yga8',
+  product_already_priced: 'text_17956196862456c39s3e4ks1',
+  product_filter_already_priced: 'text_17956196862456c39s3e4ks1',
 }
 
 type MoveToLivePreview = MoveToLivePreviewQuery['moveToLivePreview']
