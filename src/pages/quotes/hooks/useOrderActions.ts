@@ -3,6 +3,7 @@ import { generatePath } from 'react-router'
 import { IconName } from '~/components/designSystem/Icon'
 import { EDIT_ORDER_ROUTE, EXECUTE_ORDER_ROUTE } from '~/core/router'
 import { OrderListItemFragment, OrderStatusEnum } from '~/generated/graphql'
+import { loadContextualTranslator } from '~/hooks/core/useContextualLocale'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { usePermissions } from '~/hooks/usePermissions'
 import { buildOrderHeader } from '~/pages/quotes/common/buildOrderHeader'
@@ -45,20 +46,21 @@ export const useOrderActions = () => {
     const content = version?.content
 
     if (content) {
-      const header = buildOrderHeader(order, translate)
-
       actions.push({
         icon: 'download',
         label: translate('text_17797156485850t8yms6hf7z'),
         onAction: () => {
-          void download(
-            buildQuotePreviewProps({
-              version,
-              customer: order.customer,
-              images: (order.orderForm.quote.images ?? {}) as Record<string, string>,
-              header,
-            }),
-          ).catch(() => undefined)
+          const props = buildQuotePreviewProps({
+            version,
+            customer: order.customer,
+            images: (order.orderForm.quote.images ?? {}) as Record<string, string>,
+          })
+
+          void loadContextualTranslator(props.customerLocale)
+            .then((translateDocument) =>
+              download({ ...props, header: buildOrderHeader(order, translateDocument) }),
+            )
+            .catch(() => undefined)
         },
       })
     }

@@ -459,36 +459,40 @@ describe('EditQuoteAside', () => {
     })
 
     describe('WHEN the Download PDF button is clicked', () => {
-      it('THEN should trigger a PDF download', () => {
+      it('THEN should trigger a PDF download', async () => {
         render(<EditQuoteAside {...defaultPricingProps} quote={mockQuote} />)
 
         fireEvent.click(screen.getByTestId(EDIT_QUOTE_ASIDE_DOWNLOAD_PDF_TEST_ID))
 
-        expect(mockDownload).toHaveBeenCalledTimes(1)
+        await waitFor(() => expect(mockDownload).toHaveBeenCalledTimes(1))
       })
 
-      it('THEN should build the PDF header from the quote number and version', () => {
+      it('THEN should build the PDF header in the document language', async () => {
         render(<EditQuoteAside {...defaultPricingProps} quote={mockQuote} />)
 
         fireEvent.click(screen.getByTestId(EDIT_QUOTE_ASIDE_DOWNLOAD_PDF_TEST_ID))
 
-        expect(mockDownload).toHaveBeenCalledWith(
-          expect.objectContaining({
-            header: expect.objectContaining({
-              documentNumber: 'Q-001',
-              rows: ['Quote #Q-001 - v1'],
+        await waitFor(() =>
+          expect(mockDownload).toHaveBeenCalledWith(
+            expect.objectContaining({
+              header: expect.objectContaining({
+                documentNumber: 'Q-001',
+                rows: ['Quote #Q-001 - v1'],
+              }),
             }),
-          }),
+          ),
         )
       })
 
-      it('THEN should send the content of the version it was last given', () => {
+      it('THEN should send the content of the version it was last given', async () => {
         const { rerender } = render(<EditQuoteAside {...defaultPricingProps} quote={mockQuote} />)
 
         fireEvent.click(screen.getByTestId(EDIT_QUOTE_ASIDE_DOWNLOAD_PDF_TEST_ID))
 
-        expect(mockDownload).toHaveBeenLastCalledWith(
-          expect.objectContaining({ content: 'Some content' }),
+        await waitFor(() =>
+          expect(mockDownload).toHaveBeenLastCalledWith(
+            expect.objectContaining({ content: 'Some content' }),
+          ),
         )
 
         const editedQuote: QuoteDetailItemFragment = {
@@ -500,8 +504,10 @@ describe('EditQuoteAside', () => {
 
         fireEvent.click(screen.getByTestId(EDIT_QUOTE_ASIDE_DOWNLOAD_PDF_TEST_ID))
 
-        expect(mockDownload).toHaveBeenLastCalledWith(
-          expect.objectContaining({ content: 'Edited content' }),
+        await waitFor(() =>
+          expect(mockDownload).toHaveBeenLastCalledWith(
+            expect.objectContaining({ content: 'Edited content' }),
+          ),
         )
       })
     })

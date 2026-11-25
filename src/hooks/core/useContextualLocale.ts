@@ -4,10 +4,13 @@ import { envGlobalVar } from '~/core/apolloClient'
 import {
   getTranslations,
   Locale,
+  LocaleEnum,
   TranslateData,
   translateKey,
   Translation,
 } from '~/core/translations'
+
+import type { TranslateFunc } from './useInternationalization'
 
 const { appEnv } = envGlobalVar()
 
@@ -24,6 +27,23 @@ export const preloadContextualLocale = async (locale: Locale): Promise<void> => 
   const loadedTranslations = await getTranslations(locale)
 
   contextualTranslationCache.set(locale, loadedTranslations)
+}
+
+export const loadContextualTranslator = async (locale: Locale): Promise<TranslateFunc> => {
+  await preloadContextualLocale(locale)
+
+  if (locale !== LocaleEnum.en) await preloadContextualLocale(LocaleEnum.en)
+
+  const translations = contextualTranslationCache.get(locale)
+  const fallback = contextualTranslationCache.get(LocaleEnum.en)
+
+  return (key, data, plural = 0) =>
+    translateKey(
+      { translations: translations?.[key] ? translations : fallback, locale, appEnv },
+      key,
+      data,
+      plural,
+    )
 }
 
 type UseContextualLocale = (locale: Locale) => {

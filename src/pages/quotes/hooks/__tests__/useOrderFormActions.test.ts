@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 
 import { OrderFormListItemFragment, OrderFormStatusEnum } from '~/generated/graphql'
 import { buildQuotePreviewProps } from '~/pages/quotes/common/buildQuotePreviewProps'
@@ -25,7 +25,7 @@ jest.mock('~/pages/quotes/common/QuotePdfProvider', () => ({
 }))
 
 jest.mock('~/pages/quotes/common/buildQuotePreviewProps', () => ({
-  buildQuotePreviewProps: jest.fn(() => ({ content: '# Hello World' })),
+  buildQuotePreviewProps: jest.fn(() => ({ content: '# Hello World', customerLocale: 'en' })),
 }))
 
 jest.mock('~/hooks/useOrganizationInfos', () => ({
@@ -205,7 +205,7 @@ describe('useOrderFormActions', () => {
 
   describe('GIVEN the download action', () => {
     describe('WHEN triggered', () => {
-      it('THEN should download with preview props including the header data', () => {
+      it('THEN should download with preview props including the header data', async () => {
         const { result } = renderHook(() => useOrderFormActions())
         const orderForm = createMockOrderForm()
         const actions = result.current.getActions(orderForm)
@@ -217,29 +217,39 @@ describe('useOrderFormActions', () => {
           version: orderForm.quote.currentVersion,
           customer: orderForm.customer,
           images: orderForm.quote.images,
-          header: {
-            documentNumber: 'OF-2026-0001',
-            rows: ['text_1781778938224iupllzr5sgb'],
-          },
         })
-        expect(mockDownload).toHaveBeenCalledWith({ content: '# Hello World' })
+        await waitFor(() =>
+          expect(mockDownload).toHaveBeenCalledWith({
+            content: '# Hello World',
+            customerLocale: 'en',
+            header: {
+              documentNumber: 'OF-2026-0001',
+              rows: ['Order form #OF-2026-0001'],
+            },
+          }),
+        )
       })
     })
   })
 
   describe('GIVEN the download action for an order form with an expiry date', () => {
-    it('THEN should include a valid-until row in the header', () => {
+    it('THEN should include a valid-until row in the document language', async () => {
       const { result } = renderHook(() => useOrderFormActions())
       const orderForm = createMockOrderForm({ expiresAt: '2026-12-31T00:00:00Z' })
       const actions = result.current.getActions(orderForm)
 
       actions.find((a) => a.icon === 'download')?.onAction?.()
 
-      const headerArg = mockedBuildQuotePreviewProps.mock.calls[0][0].header
-
-      expect(headerArg?.rows).toHaveLength(2)
-      expect(headerArg?.rows?.[0]).toBe('text_1781778938224iupllzr5sgb')
-      expect(headerArg?.rows?.[1]).toBe('text_1781874334924qwjnv1swbo2')
+      await waitFor(() =>
+        expect(mockDownload).toHaveBeenCalledWith(
+          expect.objectContaining({
+            header: {
+              documentNumber: 'OF-2026-0001',
+              rows: ['Order form #OF-2026-0001', 'Valid until: 2026-12-31T00:00:00Z'],
+            },
+          }),
+        ),
+      )
     })
   })
 })

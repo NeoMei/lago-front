@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 
 import { OrderListItemFragment, OrderStatusEnum } from '~/generated/graphql'
 import { buildQuotePreviewProps } from '~/pages/quotes/common/buildQuotePreviewProps'
@@ -25,7 +25,7 @@ jest.mock('~/pages/quotes/common/QuotePdfProvider', () => ({
 }))
 
 jest.mock('~/pages/quotes/common/buildQuotePreviewProps', () => ({
-  buildQuotePreviewProps: jest.fn(() => ({ content: '# Hello World' })),
+  buildQuotePreviewProps: jest.fn(() => ({ content: '# Hello World', customerLocale: 'en' })),
 }))
 
 const mockedBuildQuotePreviewProps = buildQuotePreviewProps as jest.MockedFunction<
@@ -129,7 +129,7 @@ describe('useOrderActions', () => {
   })
 
   describe('GIVEN the download action', () => {
-    it('THEN downloads with preview props and the Order header', () => {
+    it('THEN downloads with preview props and the Order header in the document language', async () => {
       const { result } = renderHook(() => useOrderActions())
       const order = createMockOrder()
       const actions = result.current.getActions(order)
@@ -141,12 +141,17 @@ describe('useOrderActions', () => {
         version: order.orderForm.quote.currentVersion,
         customer: order.customer,
         images: order.orderForm.quote.images,
-        header: {
-          documentNumber: 'OR-2026-0001',
-          rows: ['text_1782723591984l12xpznkwqd'],
-        },
       })
-      expect(mockDownload).toHaveBeenCalledWith({ content: '# Hello World' })
+      await waitFor(() =>
+        expect(mockDownload).toHaveBeenCalledWith({
+          content: '# Hello World',
+          customerLocale: 'en',
+          header: {
+            documentNumber: 'OR-2026-0001',
+            rows: ['Order #OR-2026-0001'],
+          },
+        }),
+      )
     })
   })
 
