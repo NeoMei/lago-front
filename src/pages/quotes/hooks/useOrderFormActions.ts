@@ -3,6 +3,7 @@ import { generatePath } from 'react-router'
 import { IconName } from '~/components/designSystem/Icon'
 import { SIGN_ORDER_FORM_ROUTE, VOID_ORDER_FORM_ROUTE } from '~/core/router'
 import { OrderFormListItemFragment, OrderFormStatusEnum } from '~/generated/graphql'
+import { loadContextualTranslator } from '~/hooks/core/useContextualLocale'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { useOrganizationInfos } from '~/hooks/useOrganizationInfos'
 import { usePermissions } from '~/hooks/usePermissions'
@@ -38,24 +39,27 @@ export const useOrderFormActions = () => {
     }
 
     if (content) {
-      const header = buildOrderFormHeader(
-        orderForm,
-        translate,
-        (iso) => intlFormatDateTimeOrgaTZ(iso).date,
-      )
-
       actions.push({
         icon: 'download',
         label: translate('text_17797156485850t8yms6hf7z'),
         onAction: () => {
-          void download(
-            buildQuotePreviewProps({
-              version,
-              customer: orderForm.customer,
-              images: (orderForm.quote.images ?? {}) as Record<string, string>,
-              header,
-            }),
-          ).catch(() => undefined)
+          const props = buildQuotePreviewProps({
+            version,
+            customer: orderForm.customer,
+            images: (orderForm.quote.images ?? {}) as Record<string, string>,
+          })
+
+          void loadContextualTranslator(props.customerLocale)
+            .then((translateDocument) => {
+              const header = buildOrderFormHeader(
+                orderForm,
+                translateDocument,
+                (iso) => intlFormatDateTimeOrgaTZ(iso).date,
+              )
+
+              return download({ ...props, header })
+            })
+            .catch(() => undefined)
         },
       })
     }

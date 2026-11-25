@@ -15,14 +15,12 @@ import {
   type QuoteDetailItemFragment,
   type UpdateQuoteVersionInput,
 } from '~/generated/graphql'
+import { loadContextualTranslator } from '~/hooks/core/useContextualLocale'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { useAppForm } from '~/hooks/forms/useAppform'
 import { useBillingEntitiesOptions } from '~/hooks/useBillingEntitiesOptions'
 import { usePermissions } from '~/hooks/usePermissions'
-import {
-  buildQuotePreviewProps,
-  type QuotePdfHeaderData,
-} from '~/pages/quotes/common/buildQuotePreviewProps'
+import { buildQuotePreviewProps } from '~/pages/quotes/common/buildQuotePreviewProps'
 import { useDownloadQuotePdf } from '~/pages/quotes/common/QuotePdfProvider'
 import { useApproveQuote } from '~/pages/quotes/hooks/useApproveQuote'
 import { useUpdateQuote } from '~/pages/quotes/hooks/useUpdateQuote'
@@ -109,14 +107,6 @@ const EditQuoteAsideForm = ({
   const { hasMultipleEntities } = useBillingEntitiesOptions({ includeInheritOption: true })
 
   const canApprove = hasPermissions(['quotesApprove'])
-  const pdfHeader: QuotePdfHeaderData = {
-    documentNumber: quote.number,
-    rows: [
-      translate('text_17818008544903clzyy4ziu1', {
-        quoteNumberWithVersion: `${quote.number} - v${quote.currentVersion.version}`,
-      }),
-    ],
-  }
 
   const isAmendment = quote.orderType === OrderTypeEnum.SubscriptionAmendment
   const versionId = quote.currentVersion.id
@@ -254,14 +244,27 @@ const EditQuoteAsideForm = ({
   }
 
   const handleDownloadPdf = () => {
-    download(
-      buildQuotePreviewProps({
-        version: quote.currentVersion,
-        customer: quote.customer,
-        images: (quote.images ?? {}) as Record<string, string>,
-        header: pdfHeader,
-      }),
-    ).catch(() => undefined)
+    const previewProps = buildQuotePreviewProps({
+      version: quote.currentVersion,
+      customer: quote.customer,
+      images: (quote.images ?? {}) as Record<string, string>,
+    })
+
+    void loadContextualTranslator(previewProps.customerLocale)
+      .then((translateDocument) =>
+        download({
+          ...previewProps,
+          header: {
+            documentNumber: quote.number,
+            rows: [
+              translateDocument('text_17818008544903clzyy4ziu1', {
+                quoteNumberWithVersion: `${quote.number} - v${quote.currentVersion.version}`,
+              }),
+            ],
+          },
+        }),
+      )
+      .catch(() => undefined)
   }
 
   return (

@@ -64,3 +64,7 @@ echo "window.NANGO_PUBLIC_KEY = \"$nango_public_key\"" >> ./env-config.js
 echo "window.SENTRY_DSN = \"$sentry_dsn_value\"" >> ./env-config.js
 echo "window.LAGO_DISABLE_PDF_GENERATION = \"$lago_disable_pdf_generation\"" >> ./env-config.js
 echo "window.LAGO_SUPERSET_URL = \"$lago_superset_url\"" >> ./env-config.js
+
+if [[ "${LAGO_DEFAULT_UI_LOCALE:-}" =~ ^[a-z]{2}(-[A-Z]{2})?$ ]]; then
+  echo "window.LAGO_DEFAULT_UI_LOCALE = \"$LAGO_DEFAULT_UI_LOCALE\"" >> ./env-config.js
+fi

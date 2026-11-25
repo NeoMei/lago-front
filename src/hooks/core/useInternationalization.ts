@@ -5,16 +5,16 @@ import {
   updateIntlLocale,
   useInternationalizationVar,
 } from '~/core/apolloClient/reactiveVars/internationalizationVar'
-import { Locale, TranslateData, translateKey } from '~/core/translations'
+import { TranslateData, translateKey, UiLocale } from '~/core/translations'
 
 const { appEnv } = envGlobalVar()
 
 export type TranslateFunc = (key: string, data?: TranslateData, plural?: number) => string
 
 type UseInternationalization = () => {
-  locale: Locale
+  locale: UiLocale
   translate: TranslateFunc
-  updateLocale: (locale: Locale) => void
+  updateLocale: (locale: UiLocale) => void
 }
 
 export const useInternationalization: UseInternationalization = () => {
